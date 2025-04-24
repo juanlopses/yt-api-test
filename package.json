@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "axios": "*",
-    "express": "*"
+    "express": "*",
+    "form-data": "*"
   },
   "author": "",
   "license": "ISC"
