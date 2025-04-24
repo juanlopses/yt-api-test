@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const FormData = require('form-data');
 const app = express();
 const port = 3000;
 
@@ -18,13 +19,26 @@ app.get('/ytplaymp3', async (req, res) => {
         const ytResponse = await axios.get(`https://api.vreden.my.id/api/ytplaymp3?query=${encodeURIComponent(query)}`);
         const ytData = ytResponse.data;
 
-        // Acortar el enlace de la URL de descarga
-        const shortenResponse = await axios.get(`https://api.vreden.my.id/api/tools/shortlink/bitly?url=${encodeURIComponent(ytData.result.download.url)}`);
-        const shortenedUrl = shortenResponse.data.result;
+        // Descargar el archivo MP3
+        const mp3Response = await axios.get(ytData.result.download.url, { responseType: 'arraybuffer' });
+        const mp3Buffer = Buffer.from(mp3Response.data);
 
-        // Extraer solo los campos solicitados, con la URL acortada
+        // Preparar el formulario para subir el archivo a tmpfiles.org
+        const form = new FormData();
+        form.append('file', mp3Buffer, {
+            filename: ytData.result.download.filename || 'audio.mp3',
+            contentType: 'audio/mpeg'
+        });
+
+        // Subir el archivo a tmpfiles.org
+        const uploadResponse = await axios.post('https://tmpfiles.org/api/v1/upload', form, {
+            headers: form.getHeaders()
+        });
+        const uploadedUrl = uploadResponse.data.data.url;
+
+        // Extraer solo los campos solicitados, con la URL del archivo subido
         const result = {
-            url: shortenedUrl,
+            url: uploadedUrl,
             image: ytData.result.metadata.image,
             title: ytData.result.metadata.title
         };
