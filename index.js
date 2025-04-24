@@ -14,15 +14,19 @@ app.get('/ytplaymp3', async (req, res) => {
             return res.status(400).json({ error: 'Query parameter is required' });
         }
 
-        // Hacer la solicitud a la API externa
-        const response = await axios.get(`https://api.vreden.my.id/api/ytplaymp3?query=${encodeURIComponent(query)}`);
-        const data = response.data;
+        // Hacer la solicitud a la API de YouTube
+        const ytResponse = await axios.get(`https://api.vreden.my.id/api/ytplaymp3?query=${encodeURIComponent(query)}`);
+        const ytData = ytResponse.data;
 
-        // Extraer solo los campos solicitados
+        // Acortar el enlace de la URL de descarga
+        const shortenResponse = await axios.get(`https://api.vreden.my.id/api/tools/shortlink/bitly?url=${encodeURIComponent(ytData.result.download.url)}`);
+        const shortenedUrl = shortenResponse.data.result;
+
+        // Extraer solo los campos solicitados, con la URL acortada
         const result = {
-            url: data.result.download.url,
-            image: data.result.metadata.image,
-            title: data.result.metadata.title
+            url: shortenedUrl,
+            image: ytData.result.metadata.image,
+            title: ytData.result.metadata.title
         };
 
         // Enviar la respuesta
