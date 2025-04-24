@@ -34,7 +34,8 @@ app.get('/ytplaymp3', async (req, res) => {
         const uploadResponse = await axios.post('https://tmpfiles.org/api/v1/upload', form, {
             headers: form.getHeaders()
         });
-        const uploadedUrl = uploadResponse.data.data.url;
+        // Ajustar la URL para obtener el enlace directo
+        const uploadedUrl = uploadResponse.data.data.url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/');
 
         // Extraer solo los campos solicitados, con la URL del archivo subido
         const result = {
